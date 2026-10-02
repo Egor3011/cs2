@@ -1,0 +1,22 @@
+const { chromium } = require('/Users/egoraksenov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async () => {
+ const browser = await chromium.launch({headless:true,executablePath:"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"});
+ const page = await browser.newPage({viewport:{width:1512,height:1000}});
+ const errors=[];
+ page.on('pageerror', error=>errors.push(error.message));
+ await page.goto('http://127.0.0.1:5174/', {waitUntil:'networkidle'});
+ await page.evaluate(()=>document.fonts.ready);
+ await page.screenshot({path:'tmp/design-reference/site-desktop.png',fullPage:true});
+ console.log('fontDetails',await page.evaluate(()=>[...document.fonts].map(f=>({family:f.family,status:f.status}))),await page.locator('h1').evaluate(e=>({family:getComputedStyle(e).fontFamily,weight:getComputedStyle(e).fontWeight})),await page.locator('body').evaluate(e=>({family:getComputedStyle(e).fontFamily,weight:getComputedStyle(e).fontWeight})));
+ console.log('desktop', await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,about:document.querySelector('.about-section').getBoundingClientRect().top,fonts:document.fonts.status})), 'errors',errors);
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:'tmp/design-reference/site-mobile.png',fullPage:true});
+ console.log('mobile',await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,about:document.querySelector('.about-section').getBoundingClientRect().top})));
+ await page.getByRole('button',{name:'Сетка',exact:true}).click();
+ await page.screenshot({path:'tmp/design-reference/site-bracket-mobile.png',fullPage:true});
+ console.log('bracket',await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,cards:document.querySelectorAll('.tb-match').length})));
+ await page.goto('http://127.0.0.1:5174/matches/final',{waitUntil:'networkidle'});
+ await page.screenshot({path:'tmp/design-reference/site-match-mobile.png',fullPage:true});
+ console.log('match',await page.locator('h1').textContent(),'errors',errors);
+ await browser.close();
+})().catch(error=>{console.error(error);process.exit(1)});

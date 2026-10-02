@@ -1,0 +1,13 @@
+{
+  "startsOn": "2026-10-09",
+  "endsOn": "2026-10-11",
+  "registrationClosesAt": "2026-10-08T12:00:00+03:00",
+  "entryFee": 2000,
+  "minimumTeams": 8,
+  "prizeDistribution": {
+    "first": 50,
+    "second": 25,
+    "third": 10,
+    "organization": 15
+  }
+}

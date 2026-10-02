@@ -1,0 +1,47 @@
+{
+  "title": "CS2 Command Cup",
+  "resetFinal": false,
+  "teams": [
+    {
+      "id": "vp",
+      "name": "Virtus.pro",
+      "seed": 1
+    },
+    {
+      "id": "navi",
+      "name": "NAVI",
+      "seed": 2
+    },
+    {
+      "id": "spirit",
+      "name": "Team Spirit",
+      "seed": 3
+    }
+  ],
+  "stream": {
+    "url": "https://www.twitch.tv/anarabdullaev",
+    "team1": "Virtus.pro",
+    "team2": "NAVI",
+    "score1": 2,
+    "score2": 1,
+    "format": "LIVE · BO3 · MIRAGE"
+  },
+  "results": {
+    "WB1-2": {
+      "winnerId": "navi",
+      "scores": [
+        2,
+        1
+      ],
+      "status": null
+    },
+    "WB2-1": {
+      "winnerId": "vp",
+      "scores": [
+        2,
+        1
+      ],
+      "status": null
+    }
+  }
+}

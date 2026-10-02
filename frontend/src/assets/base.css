@@ -1,0 +1,575 @@
+/* ========================================
+   DESIGN TOKENS
+   ======================================== */
+
+:root {
+  /* Colors */
+  --color-pink: #e41a5d;
+  --color-blue: #1f29dd;
+  --color-black: #161616;
+  --color-white: #ffffff;
+
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e0e0e0;
+  --color-gray-500: #808080;
+
+  /* Typography */
+  --font-family: 'Manrope', Arial, Helvetica, sans-serif;
+  --font-display: 'Chakra Petch', Arial, Helvetica, sans-serif;
+
+  --font-size-main: 42px;
+  --font-size-xl: 32px;
+  --font-size-lg: 22px;
+  --font-size-md: 18px;
+  --font-size-sm: 16px;
+  --font-size-xs: 14px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-round: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+
+/* ========================================
+   RESET
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.3;
+
+  color: var(--color-black);
+  background: var(--color-white);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+/* Основной крупный заголовок — 42px */
+.title {
+  margin: 0;
+
+  font-size: var(--font-size-main);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
+}
+
+/* Заголовок секции */
+.section-title {
+  margin: 0;
+
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.15;
+}
+
+/* Дополнительный крупный текст — 22px */
+.text-lg {
+  margin: 0;
+
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.25;
+}
+
+/* Дополнительный текст — 18px */
+.text-md {
+  margin: 0;
+
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.3;
+}
+
+/* Жирный дополнительный текст */
+.text-lg-bold {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.text-md-bold {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+
+/* ========================================
+   COLORS
+   ======================================== */
+
+.text-pink {
+  color: var(--color-pink);
+}
+
+.text-blue {
+  color: var(--color-blue);
+}
+
+.text-black {
+  color: var(--color-black);
+}
+
+.bg-pink {
+  background-color: var(--color-pink);
+}
+
+.bg-blue {
+  background-color: var(--color-blue);
+}
+
+.bg-black {
+  background-color: var(--color-black);
+}
+
+
+/* ========================================
+   LAYOUT
+   ======================================== */
+
+.container {
+  width: min(100% - 32px, 1200px);
+  margin: 0 auto;
+}
+
+.page {
+  min-height: 100vh;
+  background: var(--color-white);
+}
+
+.section {
+  padding: var(--space-16) 0;
+}
+
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.header {
+  width: 100%;
+  padding: 20px 0;
+
+  background: var(--color-white);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header__logo {
+  font-size: 28px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.header__link {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+
+  transition: opacity 0.2s ease;
+}
+
+.header__link:hover {
+  opacity: 0.65;
+}
+
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 40px;
+  padding: 8px 32px;
+
+  border-radius: var(--radius-round);
+
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--pink {
+  color: var(--color-white);
+  background-color: var(--color-pink);
+}
+
+.btn--blue {
+  color: var(--color-white);
+  background-color: var(--color-blue);
+}
+
+.btn--black {
+  color: var(--color-white);
+  background-color: var(--color-black);
+}
+
+.btn--outline {
+  color: var(--color-black);
+  background: transparent;
+  border: 2px solid var(--color-black);
+}
+
+
+/* ========================================
+   COLOR PALETTE
+   ======================================== */
+
+.color-palette {
+  display: flex;
+  width: fit-content;
+}
+
+.color-palette__item {
+  width: 50px;
+  height: 50px;
+}
+
+.color-palette__item--pink {
+  background: var(--color-pink);
+}
+
+.color-palette__item--blue {
+  background: var(--color-blue);
+}
+
+.color-palette__item--black {
+  background: var(--color-black);
+}
+
+
+/* ========================================
+   TOURNAMENT CARD
+   ======================================== */
+
+.tournament-card {
+  padding: 24px;
+
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.tournament-card__title {
+  margin: 0 0 8px;
+
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.tournament-card__description {
+  margin: 0 0 20px;
+
+  color: var(--color-gray-500);
+
+  font-size: var(--font-size-md);
+}
+
+.tournament-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+
+/* ========================================
+   TOURNAMENT STATUS
+   ======================================== */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 30px;
+  padding: 5px 12px;
+
+  border-radius: var(--radius-round);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.status--active {
+  color: var(--color-white);
+  background: var(--color-pink);
+}
+
+.status--finished {
+  color: var(--color-white);
+  background: var(--color-black);
+}
+
+.status--upcoming {
+  color: var(--color-white);
+  background: var(--color-blue);
+}
+
+
+/* ========================================
+   MATCH / SCORE
+   ======================================== */
+
+.match {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.match__score {
+  color: var(--color-blue);
+
+  font-size: var(--font-size-main);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.match__separator {
+  color: var(--color-blue);
+}
+
+
+/* ========================================
+   TEAM
+   ======================================== */
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.team__logo {
+  width: 48px;
+  height: 48px;
+
+  object-fit: contain;
+}
+
+.team__name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+
+/* ========================================
+   WINNER
+   ======================================== */
+
+.winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.winner__title {
+  display: inline-block;
+
+  padding: 4px 40px;
+
+  color: var(--color-white);
+  background: var(--color-pink);
+
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+}
+
+.winner__team {
+  margin-top: 4px;
+
+  color: var(--color-pink);
+
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+
+/* ========================================
+   GRID
+   ======================================== */
+
+.tournaments-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+
+/* ========================================
+   FORMS
+   ======================================== */
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+
+  color: var(--color-black);
+  background: var(--color-white);
+
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input:focus {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px rgba(31, 41, 221, 0.12);
+}
+
+.input::placeholder {
+  color: var(--color-gray-500);
+}
+
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 900px) {
+  .tournaments-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .header__nav {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --font-size-main: 32px;
+    --font-size-xl: 26px;
+    --font-size-lg: 20px;
+    --font-size-md: 16px;
+  }
+
+  .container {
+    width: min(100% - 24px, 1200px);
+  }
+
+  .section {
+    padding: 32px 0;
+  }
+
+  .header__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header__nav {
+    flex-wrap: wrap;
+  }
+
+  .tournaments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .match__score {
+    font-size: 32px;
+  }
+
+  .winner__title,
+  .winner__team {
+    font-size: 26px;
+  }
+}
