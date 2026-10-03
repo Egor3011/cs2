@@ -1,0 +1,17 @@
+Use case: style-transfer / precise typography correction.
+Edit input image 1, the Telegram tournament poster. Input image 2 is a FONT SPECIMEN rendered directly from the actual website's font files, and is the authoritative typography reference. The user's explicit correction is: use the font of the current website.
+Change ONLY typography to match the actual Roboto Mono 600 glyphs from image 2 for all large display lettering. The current angular octagonal sports typeface in the main CS2 / COMMAND / CUP headline is wrong. Replace it with exactly the smooth normal Roboto Mono semibold monospaced forms shown in image 2: smoothly rounded C and O, rounded bowl of P, normal curved S and 2, normal M and D. NO chamfered corners, NO stencil esports letters, NO octagonal outlines. Copy the glyph shapes and relative stroke weight visible in the font specimen, enlarging them uniformly as needed to fill approximately the same three-line headline block as input 1. Roboto Mono is the site's actual display font. Use it also for the CS2 Weekly brand and the large date. Use normal Ubuntu Mono regular for small captions and Roboto Mono 500 for the slogan.
+Keep the existing poster's exact overall layout and landscape aspect ratio 1423x1105: same white background, same margins, same header positions, same thin horizontal dividers, same black and red palette, same three headline lines left aligned, same red COMMAND, same red full stop after CUP, same slogan location, same bottom fee and teams block, same date bottom right. All fonts must look like the site's specimen, not like the previous angular lettering. Preserve wording verbatim:
+CS2 Weekly
+COUNTER-STRIKE 2
+ОТКРЫТЫЙ
+ОНЛАЙН-ТУРНИР
+CS2
+COMMAND
+CUP.
+Пять игроков. Два шанса. Одна победа.
+ВЗНОС — 2 000 ₽ / КОМАНДА
+ОТ 8 КОМАНД
+9–11
+ОКТЯБРЯ 2026
+Do NOT copy the explanatory font-specimen label or its missing-glyph square into the poster. Preserve the correct ₽ currency symbol from image 1. Do not introduce any new text or objects. Typography-only correction, crisp flat edges, professional poster.
