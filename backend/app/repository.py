@@ -25,6 +25,15 @@ def tournament_etag(tournament: Tournament) -> str:
     return '"' + hashlib.sha256(payload.encode()).hexdigest() + '"'
 
 
+def normalize_tournament_version(value: str) -> str:
+    # This is an application data version, not a byte-for-byte response validator.
+    # Gzip proxies may mark the HTTP ETag weak without changing the stored data.
+    version = value.strip()
+    if version.startswith("W/"):
+        version = version[2:].strip()
+    return version
+
+
 class TournamentRepository:
     def __init__(self, data_file: Path) -> None:
         self.data_file = data_file
@@ -51,8 +60,8 @@ class TournamentRepository:
             return updated
 
     def _check_version(self, expected_etag: str | None) -> None:
-        if expected_etag is not None and expected_etag != tournament_etag(self._read_unlocked()):
-            raise TournamentConflictError("Турнир изменён в другой вкладке. Сохраните копию правок и загрузите свежие данные.")
+        if expected_etag is not None and normalize_tournament_version(expected_etag) != tournament_etag(self._read_unlocked()):
+            raise TournamentConflictError("На сервере появились новые изменения. Ваши правки остаются в панели.")
 
     def _read_unlocked(self) -> Tournament:
         try:

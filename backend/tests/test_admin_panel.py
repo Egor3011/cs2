@@ -57,11 +57,30 @@ def test_stale_admin_save_is_rejected_without_overwriting(stores):
         response = client.get("/api/admin/tournament")
         original = response.json()
         tag = response.headers["etag"]
+        assert response.headers["x-tournament-version"] == tag
         changed = client.patch("/api/admin/tournament", json={"title": "New"}, headers={"If-Match": tag})
         assert changed.status_code == 200
         assert changed.headers["etag"] != tag
+        assert changed.headers["x-tournament-version"] == changed.headers["etag"]
         before = stores[0].read_bytes()
         assert client.put("/api/admin/tournament", json=original, headers={"If-Match": tag}).status_code == 409
+        assert stores[0].read_bytes() == before
+
+
+@pytest.mark.parametrize("method", ["put", "patch"])
+def test_proxy_weakened_etag_does_not_cause_a_false_conflict(stores, method):
+    with TestClient(main.app) as client:
+        loaded = client.get("/api/admin/tournament")
+        # Nginx gzip changes ETag: "digest" to ETag: W/"digest".
+        proxy_tag = "W/" + loaded.headers["etag"]
+        payload = {**loaded.json(), "title": "Saved through gzip"} if method == "put" else {"title": "Saved through gzip"}
+        saved = getattr(client, method)("/api/admin/tournament", json=payload, headers={"If-Match": proxy_tag})
+        assert saved.status_code == 200
+        assert client.get("/api/tournament").json()["title"] == "Saved through gzip"
+        before = stores[0].read_bytes()
+        # A genuinely old version must still be rejected even with the W/ prefix.
+        stale = getattr(client, method)("/api/admin/tournament", json=payload, headers={"If-Match": proxy_tag})
+        assert stale.status_code == 409
         assert stores[0].read_bytes() == before
 
 

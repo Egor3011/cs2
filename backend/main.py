@@ -17,6 +17,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["ETag", "X-Tournament-Version"],
 )
 
 app.include_router(tournament.router)

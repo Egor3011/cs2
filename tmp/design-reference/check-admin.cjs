@@ -8,11 +8,15 @@ const testKey = 'admin-test-only';
   fs.writeFileSync('tmp/design-reference/admin-test/registrations.json', JSON.stringify([{ id: 'test-application', teamName: 'Five Aces', captainName: 'Test Captain', email: 'test@example.com', contact: '@testcaptain', players: 5, createdAt: '2026-10-01T12:00:00Z', status: 'pending' }]));
   const browser = await chromium.launch({ headless: true, executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
   try {
+    let omitVersion = false;
     const context = await browser.newContext({ viewport: { width: 1512, height: 1000 } });
     await context.route('**/api/**', async route => {
       const pathname = new URL(route.request().url()).pathname;
       const response = await route.fetch({ url: api + pathname });
-      await route.fulfill({ response });
+      const responseHeaders = response.headers();
+      if (responseHeaders.etag) responseHeaders.etag = 'W/' + responseHeaders.etag;
+      if (omitVersion) delete responseHeaders['x-tournament-version'];
+      await route.fulfill({ response, headers: responseHeaders });
     });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -96,13 +100,36 @@ const testKey = 'admin-test-only';
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: 'Турнир', exact: true }).click();
     await page.screenshot({ path: 'tmp/design-reference/admin-settings-mobile.png', fullPage: true });
-    // A second edit on the server must not be overwritten by this stale draft.
+    // Distinct local/server fields merge and save without requiring re-entry.
+    omitVersion = true; // Also exercise legacy proxy responses with only a weak ETag.
+    await page.getByLabel('Название турнира', { exact: true }).fill('Automatically merged title');
+    const current = await (await page.request.get(api + '/api/admin/tournament', { headers: { 'X-Admin-Key': testKey } })).json();
+    await page.request.patch(api + '/api/admin/tournament', { headers: { 'X-Admin-Key': testKey }, data: { terms: { ...current.terms, minimumTeams: 9 } } });
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    await page.getByRole('status').filter({ hasText: 'Ваши правки объединены' }).waitFor();
+    let disk = JSON.parse(fs.readFileSync('tmp/design-reference/admin-test/tournament.json', 'utf8'));
+    assert.equal(disk.title, 'Automatically merged title');
+    assert.equal(disk.terms.minimumTeams, 9);
+    // A second edit on the same field requires an explicit choice.
+
     await page.getByLabel('Название турнира', { exact: true }).fill('Stale draft');
     await page.request.patch(api + '/api/admin/tournament', { headers: { 'X-Admin-Key': testKey }, data: { title: 'Newer server title' } });
     await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
-    await page.getByRole('alert').filter({ hasText: 'другой вкладке' }).waitFor();
+    await page.getByRole('heading', { name: 'Выберите, какие значения оставить' }).waitFor();
     assert.equal(await page.getByLabel('Название турнира', { exact: true }).inputValue(), 'Stale draft');
-    await page.getByRole('button', { name: 'Отменить правки', exact: true }).click();
+    await page.getByRole('button', { name: 'Оставить мои значения', exact: true }).click();
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    await page.getByRole('status').filter({ hasText: 'Сохранено. Изменения опубликованы' }).waitFor();
+    disk = JSON.parse(fs.readFileSync('tmp/design-reference/admin-test/tournament.json', 'utf8'));
+    assert.equal(disk.title, 'Stale draft'); assert.equal(disk.terms.minimumTeams, 9);
+    await page.getByLabel('Название турнира', { exact: true }).fill('Another local title');
+    await page.request.patch(api + '/api/admin/tournament', { headers: { 'X-Admin-Key': testKey }, data: { title: 'Newer server title' } });
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    await page.getByRole('heading', { name: 'Выберите, какие значения оставить' }).waitFor();
+    await page.screenshot({ path: 'tmp/design-reference/admin-conflict-mobile.png', fullPage: true });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 390);
+    await page.getByRole('button', { name: 'Принять значения с сервера', exact: true }).click();
+    assert.equal(await page.getByLabel('Название турнира', { exact: true }).inputValue(), 'Newer server title');
     await page.getByRole('button', { name: 'Выйти', exact: true }).click();
     assert.equal(await page.getByLabel('Ключ администратора').inputValue(), '');
     const publicPage = await context.newPage();
