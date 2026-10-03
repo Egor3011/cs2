@@ -12,11 +12,11 @@ services:
     volumes:
       - tournament-data:/app/data
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 5s
-      timeout: 3s
+      test: ["CMD", "python", "-c", "import urllib.request; opener = urllib.request.build_opener(urllib.request.ProxyHandler({})); opener.open('http://127.0.0.1:8000/health', timeout=5).close()"]
+      interval: 10s
+      timeout: 15s
       retries: 10
-      start_period: 5s
+      start_period: 30s
     restart: unless-stopped
 
   frontend:
