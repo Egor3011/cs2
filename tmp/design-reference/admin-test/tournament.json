@@ -1,5 +1,5 @@
 {
-  "title": "CS2 Command Cup",
+  "title": "Newer server title",
   "prizePool": "90% от суммы вступительных взносов",
   "resetFinal": false,
   "teams": [
@@ -14,32 +14,37 @@
       "seed": 2
     },
     {
-      "id": "spirit",
-      "name": "Team Spirit",
+      "id": "team-murh5pmt-3btz",
+      "name": "New Aces",
       "seed": 3
     },
     {
-      "id": "team-murhczp3-eu6n",
-      "name": "sss",
+      "id": "spirit",
+      "name": "Team Spirit",
       "seed": 4
+    },
+    {
+      "id": "team-murh5qpa-iyhs",
+      "name": "Five Aces",
+      "seed": 5
     }
   ],
   "terms": {
-    "startsOn": "2026-10-09",
-    "endsOn": "2026-10-11",
-    "registrationClosesAt": "2026-10-08T12:00:00+03:00",
-    "entryFee": 2000,
+    "startsOn": "2027-10-09",
+    "endsOn": "2027-10-11",
+    "registrationClosesAt": "2027-10-08T12:00:00+03:00",
+    "entryFee": 2500,
     "minimumTeams": 8,
     "prizeDistribution": {
-      "first": 50,
+      "first": 45,
       "second": 25,
-      "third": 10,
+      "third": 15,
       "organization": 15
     }
   },
   "content": {
-    "heroLead": "Пять игроков. Два шанса. Одна победа.",
-    "heroDescription": "Заявите команду и поборитесь за призовой фонд, который формируется из взносов участников.",
+    "heroLead": "Турнир начинается здесь.",
+    "heroDescription": "Описание из админ-панели.",
     "preflightText": "Будьте готовы за 15 минут до матча. Проверьте Counter-Strike 2 и античит Faceit. Замены после публикации посева согласуйте с администратором.",
     "broadcastText": "Гранд-финал и матч за 3 место будут транслироваться на Twitch и на этом сайте.",
     "organizerUrl": "https://t.me/zavoz_contenta",
@@ -96,40 +101,37 @@
         "answer": [
           "Да, до окончания проверки заявок. Капитану необходимо согласовать замену с администратором до публикации посева."
         ]
+      },
+      {
+        "question": "Как связаться?",
+        "answer": [
+          "Напишите организатору."
+        ]
       }
     ]
   },
   "stream": {
     "url": "https://www.twitch.tv/anarabdullaev",
-    "team1": "Virtus.pro",
-    "team2": "sss",
-    "score1": 1,
-    "score2": 1,
-    "format": "LIVE · BO3"
+    "team1": null,
+    "team2": null,
+    "score1": null,
+    "score2": null,
+    "format": ""
   },
-  "results": {
-    "WB1-1": {
-      "winnerId": null,
-      "scores": [
-        1,
-        1
-      ],
-      "status": "live"
-    }
-  },
+  "results": {},
   "matches": {
-    "match-murhfp2n-xck0": {
-      "hidden": false,
-      "stage": "Новый матч",
-      "startsAt": "2026-10-09T12:00:00+03:00",
+    "final": {
+      "hidden": true,
+      "stage": "Финал верхней сетки",
+      "startsAt": null,
       "status": "live",
       "team1Id": "vp",
-      "team2Id": "team-murhczp3-eu6n",
+      "team2Id": "navi",
       "scores": [
-        1,
+        2,
         1
       ],
-      "bestOf": 3,
+      "bestOf": 5,
       "maps": [
         {
           "name": "Mirage",
@@ -140,16 +142,106 @@
           ]
         },
         {
+          "name": "Inferno",
+          "status": "completed",
+          "scores": [
+            13,
+            11
+          ]
+        },
+        {
           "name": "Nuke",
-          "status": "scheduled",
-          "scores": null
+          "status": "completed",
+          "scores": [
+            10,
+            13
+          ]
         },
         {
           "name": "Ancient",
+          "status": "live",
+          "scores": [
+            8,
+            7
+          ]
+        },
+        {
+          "name": "Dust II",
           "status": "scheduled",
           "scores": null
         }
       ],
+      "currentRound": 15,
+      "totalRounds": 30,
+      "players": [
+        {
+          "name": "FL1T",
+          "teamId": "vp",
+          "kills": 18,
+          "deaths": 11,
+          "adr": 92.4,
+          "kast": 82.0,
+          "rating": 1.32
+        },
+        {
+          "name": "Jame",
+          "teamId": "vp",
+          "kills": 16,
+          "deaths": 12,
+          "adr": 81.7,
+          "kast": 79.0,
+          "rating": 1.18
+        },
+        {
+          "name": "fame",
+          "teamId": "vp",
+          "kills": 15,
+          "deaths": 13,
+          "adr": 78.2,
+          "kast": 75.0,
+          "rating": 1.12
+        },
+        {
+          "name": "b1t",
+          "teamId": "navi",
+          "kills": 14,
+          "deaths": 15,
+          "adr": 76.3,
+          "kast": 71.0,
+          "rating": 1.04
+        },
+        {
+          "name": "iM",
+          "teamId": "navi",
+          "kills": 13,
+          "deaths": 16,
+          "adr": 71.8,
+          "kast": 68.0,
+          "rating": 0.98
+        }
+      ],
+      "broadcast": {
+        "url": "https://www.twitch.tv/anarabdullaev",
+        "commentator": "Alex «Machine»",
+        "viewers": 12482
+      },
+      "nextMatch": {
+        "stage": "Гранд-финал",
+        "description": "Участники определятся после финалов сеток",
+        "team1": "Победитель верхней сетки",
+        "team2": "Победитель нижней сетки"
+      }
+    },
+    "match-murh5ptk-20w6": {
+      "hidden": true,
+      "stage": "Гранд-финал проверки",
+      "startsAt": "2027-10-11T18:00:00+03:00",
+      "status": "scheduled",
+      "team1Id": "vp",
+      "team2Id": "spirit",
+      "scores": null,
+      "bestOf": 3,
+      "maps": [],
       "currentRound": null,
       "totalRounds": null,
       "players": [],

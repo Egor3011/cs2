@@ -1,4 +1,5 @@
 import json
+import hashlib
 import os
 import stat
 from pathlib import Path
@@ -15,6 +16,15 @@ class TournamentDataError(RuntimeError):
     """Raised when the tournament storage cannot be read or validated."""
 
 
+class TournamentConflictError(RuntimeError):
+    pass
+
+
+def tournament_etag(tournament: Tournament) -> str:
+    payload = json.dumps(model_to_json_dict(tournament), sort_keys=True, ensure_ascii=False)
+    return '"' + hashlib.sha256(payload.encode()).hexdigest() + '"'
+
+
 class TournamentRepository:
     def __init__(self, data_file: Path) -> None:
         self.data_file = data_file
@@ -24,19 +34,25 @@ class TournamentRepository:
         with self._lock:
             return self._read_unlocked()
 
-    def replace(self, tournament: Tournament) -> Tournament:
+    def replace(self, tournament: Tournament, expected_etag: str | None = None) -> Tournament:
         with self._lock:
+            self._check_version(expected_etag)
             self._write_unlocked(tournament)
             return tournament
 
-    def patch(self, patch: TournamentPatch) -> Tournament:
+    def patch(self, patch: TournamentPatch, expected_etag: str | None = None) -> Tournament:
         with self._lock:
+            self._check_version(expected_etag)
             current = self._read_unlocked()
             merged_data = model_to_json_dict(current)
             merged_data.update(model_to_json_dict(patch, exclude_unset=True))
             updated = Tournament.model_validate(merged_data)
             self._write_unlocked(updated)
             return updated
+
+    def _check_version(self, expected_etag: str | None) -> None:
+        if expected_etag is not None and expected_etag != tournament_etag(self._read_unlocked()):
+            raise TournamentConflictError("Турнир изменён в другой вкладке. Сохраните копию правок и загрузите свежие данные.")
 
     def _read_unlocked(self) -> Tournament:
         try:

@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from pydantic import ValidationError
 
 from app.dependencies import get_tournament_repository, require_admin_key
 from app.models import Tournament, TournamentPatch, UpdateResponse
-from app.repository import TournamentDataError, TournamentRepository
+from app.repository import TournamentConflictError, TournamentDataError, TournamentRepository, tournament_etag
 
 
 router = APIRouter(
@@ -29,9 +29,12 @@ def _storage_error(exc: TournamentDataError) -> HTTPException:
     response_model_by_alias=True,
     response_model_exclude_none=True,
 )
-def get_tournament_for_admin(repository: Repository) -> Tournament:
+def get_tournament_for_admin(repository: Repository, response: Response) -> Tournament:
     try:
-        return repository.get()
+        tournament = repository.get()
+        response.headers["ETag"] = tournament_etag(tournament)
+        response.headers["Cache-Control"] = "no-store"
+        return tournament
     except TournamentDataError as exc:
         raise _storage_error(exc) from exc
 
@@ -42,11 +45,14 @@ def get_tournament_for_admin(repository: Repository) -> Tournament:
     response_model_by_alias=True,
     response_model_exclude_none=True,
 )
-def replace_tournament(tournament: Tournament, repository: Repository) -> UpdateResponse:
+def replace_tournament(tournament: Tournament, repository: Repository, response: Response, if_match: Annotated[str | None, Header()] = None) -> UpdateResponse:
     """Replace the complete tournament document."""
     try:
-        updated = repository.replace(tournament)
+        updated = repository.replace(tournament, if_match)
+        response.headers["ETag"] = tournament_etag(updated)
         return UpdateResponse(message="Tournament updated", tournament=updated)
+    except TournamentConflictError as exc:
+        raise HTTPException(409, detail=str(exc)) from exc
     except TournamentDataError as exc:
         raise _storage_error(exc) from exc
 
@@ -57,7 +63,7 @@ def replace_tournament(tournament: Tournament, repository: Repository) -> Update
     response_model_by_alias=True,
     response_model_exclude_none=True,
 )
-def patch_tournament(patch: TournamentPatch, repository: Repository) -> UpdateResponse:
+def patch_tournament(patch: TournamentPatch, repository: Repository, response: Response, if_match: Annotated[str | None, Header()] = None) -> UpdateResponse:
     """Update only the supplied top-level tournament fields."""
     if not patch.model_fields_set:
         raise HTTPException(
@@ -66,8 +72,11 @@ def patch_tournament(patch: TournamentPatch, repository: Repository) -> UpdateRe
         )
 
     try:
-        updated = repository.patch(patch)
+        updated = repository.patch(patch, if_match)
+        response.headers["ETag"] = tournament_etag(updated)
         return UpdateResponse(message="Tournament updated", tournament=updated)
+    except TournamentConflictError as exc:
+        raise HTTPException(409, detail=str(exc)) from exc
     except ValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

@@ -1,5 +1,13 @@
 # frontend
 
+## Админ-панель турнира
+
+Панель находится по адресу `/admin`. Для её работы запустите backend:
+фронтенд отправляет запросы `/api` через proxy из `vite.config.js`.
+Управление доступом и описание разделов — в `backend/README.md`.
+Панель загружается отдельным модулем и не увеличивает первоначальную
+загрузку главной страницы кодом форм администрирования.
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup

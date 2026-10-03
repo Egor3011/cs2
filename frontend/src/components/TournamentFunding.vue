@@ -14,7 +14,7 @@ const places = [ { key: 'first', title: '1 место', note: 'Победите�
     <div class="section-heading"><div><span class="section-kicker">02 / ВЗНОСЫ И ПРИЗОВЫЕ</span><h2 id="funding-title">За что боремся</h2></div><span class="section-aside">Прозрачный расчёт</span></div>
     <div class="funding-intro">
       <p>Вступительный взнос — <strong class="accent">{{ formatRubles(terms.entryFee) }} с команды</strong>. Призовой фонд формируется из взносов участников.</p>
-      <p><strong>85% всей суммы взносов — призёрам.</strong> Оставшиеся 15% получает организатор за проведение мероприятия.</p>
+      <p><strong>{{ 100 - terms.prizeDistribution.organization }}% всей суммы взносов — призёрам.</strong> Оставшиеся {{ terms.prizeDistribution.organization }}% получает организатор за проведение мероприятия.</p>
     </div>
     <div class="funding-calculator">
       <label for="funding-team-count">Пример расчёта для <input id="funding-team-count" v-model.number="teamCount" type="number" :min="terms.minimumTeams" step="1" inputmode="numeric" aria-describedby="funding-calculator-note"> команд</label>

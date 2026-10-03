@@ -86,6 +86,7 @@ class NextMatch(ApiModel):
 
 
 class MatchDetail(ApiModel):
+    hidden: bool = False
     stage: str = Field(min_length=1)
     starts_at: str | None = Field(default=None, alias="startsAt")
     status: Literal["scheduled", "live", "completed"] = "scheduled"
@@ -128,6 +129,40 @@ class TournamentTerms(ApiModel):
             raise ValueError("Registration deadline must include a timezone")
         return value
 
+    @model_validator(mode="after")
+    def validate_terms(self) -> "TournamentTerms":
+        if self.ends_on < self.starts_on:
+            raise ValueError("Дата окончания не может быть раньше начала турнира")
+        if self.registration_closes_at.date() > self.starts_on:
+            raise ValueError("Регистрация должна завершиться до начала турнира")
+        if set(self.prize_distribution) != {"first", "second", "third", "organization"}:
+            raise ValueError("Укажите доли трёх призовых мест и организатора")
+        if any(value < 0 or value > 100 for value in self.prize_distribution.values()) or sum(self.prize_distribution.values()) != 100:
+            raise ValueError("Сумма всех долей должна быть 100%")
+        return self
+
+
+class ContentStep(ApiModel):
+    title: str = Field(min_length=1, max_length=150)
+    text: str = Field(min_length=1, max_length=3000)
+
+
+class ContentFaq(ApiModel):
+    question: str = Field(min_length=1, max_length=300)
+    answer: list[str] = Field(min_length=1)
+
+
+class SiteContent(ApiModel):
+    hero_lead: str | None = Field(default=None, alias="heroLead", max_length=1000)
+    hero_description: str | None = Field(default=None, alias="heroDescription", max_length=3000)
+    preflight_text: str | None = Field(default=None, alias="preflightText", max_length=3000)
+    broadcast_text: str | None = Field(default=None, alias="broadcastText", max_length=3000)
+    organizer_url: str | None = Field(default=None, alias="organizerUrl", max_length=1000)
+    organizer_label: str | None = Field(default=None, alias="organizerLabel", max_length=150)
+    participation_steps: list[ContentStep] | None = Field(default=None, alias="participationSteps")
+    participation_cards: list[ContentStep] | None = Field(default=None, alias="participationCards")
+    faq_items: list[ContentFaq] | None = Field(default=None, alias="faqItems")
+
 
 class Tournament(ApiModel):
     title: str = Field(min_length=1)
@@ -135,6 +170,7 @@ class Tournament(ApiModel):
     reset_final: bool = Field(default=True, alias="resetFinal")
     teams: list[Team] = Field(min_length=1)
     terms: TournamentTerms | None = None
+    content: SiteContent | None = None
     stream: Stream | None = None
     results: dict[str, MatchResult] = Field(default_factory=dict)
     matches: dict[str, MatchDetail] = Field(default_factory=dict)
@@ -173,6 +209,7 @@ class TournamentPatch(ApiModel):
     reset_final: bool | None = Field(default=None, alias="resetFinal")
     teams: list[Team] | None = Field(default=None, min_length=1)
     terms: TournamentTerms | None = None
+    content: SiteContent | None = None
     stream: Stream | None = None
     results: dict[str, MatchResult] | None = None
     matches: dict[str, MatchDetail] | None = None
@@ -207,7 +244,7 @@ class RegistrationCreate(ApiModel):
 class Registration(RegistrationCreate):
     id: str
     created_at: str = Field(alias="createdAt")
-    status: Literal["pending", "approved", "rejected"] = "pending"
+    status: Literal["pending", "approved", "rejected", "yes", "waitpay"] = "pending"
 
 
 class PublicRegistration(ApiModel):
@@ -215,12 +252,16 @@ class PublicRegistration(ApiModel):
     team_name: str = Field(alias="teamName")
     players: int
     created_at: str = Field(alias="createdAt")
-    status: Literal["pending", "approved", "rejected"]
+    status: Literal["pending", "approved", "rejected", "yes", "waitpay"]
 
 
 class RegistrationResponse(ApiModel):
     message: str
     registration: Registration
+
+
+class RegistrationStatusPatch(ApiModel):
+    status: Literal["pending", "approved", "rejected", "yes", "waitpay"]
 
 
 def model_to_json_dict(model: BaseModel, *, exclude_unset: bool = False) -> dict[str, Any]:

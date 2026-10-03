@@ -28,7 +28,7 @@ def get_match(match_id: str, repository: Repository) -> MatchResponse:
         ) from exc
 
     match = tournament.matches.get(match_id)
-    if match is None:
+    if match is None or match.hidden:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Match not found",

@@ -1,0 +1,12 @@
+[
+  {
+    "teamName": "Five Aces",
+    "captainName": "Test Captain",
+    "email": "test@example.com",
+    "contact": "@testcaptain",
+    "players": 5,
+    "id": "test-application",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "status": "approved"
+  }
+]

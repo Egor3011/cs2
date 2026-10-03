@@ -11,6 +11,10 @@ const router = createRouter({
 
   routes: [
     {
+      path: '/admin',
+      component: () => import('@/views/AdminView.vue')
+    },
+    {
       path: '/',
       component: () => import('@/views/TournamentView.vue')
     },

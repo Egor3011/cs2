@@ -41,6 +41,17 @@ class RegistrationRepository:
                 reverse=True,
             )
 
+    def update_status(self, registration_id: str, status: str) -> Registration | None:
+        with self._lock:
+            registrations = self._read_unlocked()
+            for index, item in enumerate(registrations):
+                if item.get("id") == registration_id:
+                    registration = Registration.model_validate({**item, "status": status})
+                    registrations[index] = model_to_json_dict(registration)
+                    self._write_unlocked(registrations)
+                    return registration
+            return None
+
     def _read_unlocked(self) -> list[dict]:
         try:
             with self.data_file.open("r", encoding="utf-8") as source:

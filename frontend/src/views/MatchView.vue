@@ -7,6 +7,7 @@ import SiteFooter from '@/components/SiteFooter.vue'
 import LiveStream from '@/components/LiveStream.vue'
 import TournamentBracket from '@/components/TournamentBracket.vue'
 import { twitchChannelFromUrl } from '@/utils/stream'
+import { siteContent } from '@/data/siteContent'
 const route = useRoute()
 const response = ref(null)
 const isLoading = ref(true)
@@ -14,6 +15,7 @@ const loadError = ref('')
 const selected = ref('score')
 const match = computed(() => response.value?.match)
 const tournament = computed(() => response.value?.tournament)
+const content = computed(() => siteContent(tournament.value?.content))
 const channel = computed(() => twitchChannelFromUrl(match.value?.broadcast?.url))
 const teamName = (id) => tournament.value?.teams?.find(team => team.id === id)?.name ?? 'Участник определится'
 const statuses = { live: 'В эфире', completed: 'Завершён', scheduled: 'Ожидает начала' }
@@ -68,6 +70,6 @@ onUnmounted(() => { clearInterval(refreshTimer); requestId++ })
         <TournamentBracket v-else :data="tournament" />
       </template>
     </main>
-    <SiteFooter :stream-url="channel ? match.broadcast.url : ''" />
+    <SiteFooter :stream-url="channel ? match.broadcast.url : ''" :organizer-url="content.organizerUrl" :organizer-label="content.organizerLabel" />
   </div>
 </template>

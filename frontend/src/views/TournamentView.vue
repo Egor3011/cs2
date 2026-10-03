@@ -9,6 +9,7 @@ import LiveStream from '@/components/LiveStream.vue'
 import RegistrationCountdown from '@/components/RegistrationCountdown.vue'
 import TournamentFunding from '@/components/TournamentFunding.vue'
 import defaultTerms from '@/data/tournamentTerms.json'
+import { siteContent } from '@/data/siteContent'
 import { formatRubles, registrationCountdown } from '@/utils/tournamentTerms'
 import { twitchChannelFromUrl } from '@/utils/stream'
 
@@ -18,6 +19,10 @@ const isLoading = ref(true)
 const loadError = ref('')
 const activeTab = ref('participation')
 const terms = computed(() => ({ ...defaultTerms, ...(tournament.value?.terms ?? {}) }))
+const content = computed(() => siteContent(tournament.value?.content))
+const registrationDeadlineText = computed(() => `${new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }).format(new Date(terms.value.registrationClosesAt)).replace(' в ', ', ')} МСК`)
+const tournamentYear = computed(() => terms.value.startsOn.slice(0, 4))
+const prizeShare = computed(() => 100 - terms.value.prizeDistribution.organization)
 const registrationClosed = ref(registrationCountdown(defaultTerms.registrationClosesAt).closed)
 const tournamentDates = computed(() => new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' }).formatRange(new Date(terms.value.startsOn), new Date(terms.value.endsOn)))
 const eventTab = ref('matches')
@@ -27,30 +32,27 @@ const registrationError = ref('')
 const applications = ref([])
 const applicationsStatus = ref('loading')
 const applicationsError = ref('')
-const applicationStatuses = { pending: 'На проверке', approved: 'Допущена', rejected: 'Отклонена' }
+const applicationStatuses = { pending: 'На проверке', yes: 'Участвуют', waitpay: 'Ожидания взноса', approved: 'Допущена', rejected: 'Отклонена' }
 const tabs = [ { id: 'participation', label: 'Условия' }, { id: 'form', label: 'Заявка' }, { id: 'teams', label: 'Команды' } ]
 const eventTabs = [ { id: 'matches', label: 'Матчи' }, { id: 'bracket', label: 'Сетка' }, { id: 'stream', label: 'Трансляция' } ]
 const stream = computed(() => tournament.value?.stream)
 const streamChannel = computed(() => twitchChannelFromUrl(stream.value?.url))
-const matches = computed(() => Object.entries(tournament.value?.matches ?? {}).map(([id, match]) => ({ id, ...match })))
+const matches = computed(() => Object.entries(tournament.value?.matches ?? {}).filter(([, match]) => !match.hidden).map(([id, match]) => ({ id, ...match })))
 const liveMatch = computed(() => matches.value.find(match => match.status === 'live'))
 const matchStatuses = { live: 'В эфире', completed: 'Завершён', scheduled: 'Скоро' }
-const participationSteps = [
-  { title: 'Отправьте заявку', text: 'Название команды, данные капитана и контакт для связи.' },
-  { title: 'Подтвердите состав', text: 'Администратор свяжется с капитаном и проверит участников.' },
-  { title: 'Выходите на сервер', text: 'Получите данные лобби и будьте готовы за 15 минут до матча.' },
-]
+const participationSteps = computed(() => content.value.participationSteps)
 const teamName = (id) => tournament.value?.teams?.find(team => team.id === id)?.name ?? 'Участник определится'
-const faqItems = [
-  { question: 'Как зарегистрировать команду?', answer: ['Выберите вкладку «Заявка» в разделе участия и заполните данные команды и капитана.', 'После отправки команда появится в списке заявок. Администратор свяжется с капитаном по указанному контакту для проверки состава.', 'До подачи заявки ознакомьтесь с регламентом турнира.'] },
-  { question: 'Когда проходит турнир и закрывается регистрация?', answer: ['Турнир — 9–11 октября 2026 года. Регистрация до 8 октября, 12:00 по московскому времени.', 'Расписание каждого матча капитан получит после подтверждения состава. Всё время на сайте — по Москве.'] },
-  { question: 'Какой вступительный взнос и как делятся призовые?', answer: ['Вступительный взнос — 2.000 рублей с команды. Призовой фонд формируется из взносов участников.', 'От общей суммы взносов: 1 место — 50%, 2 место — 25%, 3 место — 15%. Оставшиеся 10% получает организатор за проведение мероприятия.'] },
-  { question: 'Сколько команд нужно для проведения турнира?', answer: ['Минимум 8 команд. Верхнего лимита количества команд нет.'] },
-  { question: 'Где смотреть решающие матчи?', answer: ['Гранд-финал и матч за 3 место будут транслироваться на Twitch и прямо на этом сайте.', 'Откройте вкладку «Трансляция» в разделе «Матчи и сетка».'] },
-  { question: 'Кто может участвовать?', answer: ['К участию допускаются команды из пяти основных игроков. В заявку можно включить до двух запасных.', 'Организатор проверяет состав перед допуском к турниру.'] },
-  { question: 'Как устроена турнирная сетка?', answer: ['Турнир проходит по системе Double elimination — до двух поражений.', 'После первого поражения команда переходит в нижнюю сетку. Победители обеих сеток встречаются в гранд-финале.'] },
-  { question: 'Можно ли заменить игрока?', answer: ['Да, до окончания проверки заявок. Капитану необходимо согласовать замену с администратором до публикации посева.'] },
-]
+const faqItems = computed(() => {
+  const distribution = terms.value.prizeDistribution
+  return [
+    ...content.value.faqItems.slice(0, 1),
+    { question: 'Когда проходит турнир и закрывается регистрация?', answer: [`Турнир — ${tournamentDates.value} ${tournamentYear.value} года. Регистрация до ${registrationDeadlineText.value}.`, 'Расписание каждого матча капитан получит после подтверждения состава. Всё время на сайте — по Москве.'] },
+    { question: 'Какой вступительный взнос и как делятся призовые?', answer: [`Вступительный взнос — ${formatRubles(terms.value.entryFee)} с команды. Призовой фонд формируется из взносов участников.`, `От общей суммы взносов: 1 место — ${distribution.first}%, 2 место — ${distribution.second}%, 3 место — ${distribution.third}%. Оставшиеся ${distribution.organization}% получает организатор за проведение мероприятия.`] },
+    { question: 'Сколько команд нужно для проведения турнира?', answer: [`Минимум ${terms.value.minimumTeams} команд. Верхнего лимита количества команд нет.`] },
+    { question: 'Где смотреть решающие матчи?', answer: [content.value.broadcastText, 'Откройте вкладку «Трансляция» в разделе «Матчи и сетка».'] },
+    ...content.value.faqItems.slice(1),
+  ]
+})
 
 async function loadTournament() {
   isLoading.value = true
@@ -132,8 +134,8 @@ onMounted(() => {
       <section class="about-section hero-section" aria-labelledby="about-title">
         <span class="section-kicker">ОТКРЫТЫЙ ОНЛАЙН-ТУРНИР / COUNTER-STRIKE 2</span>
         <h1 id="about-title">{{ tournament?.title ?? 'CS2 Command Cup' }}<span class="accent" aria-hidden="true">.</span></h1>
-        <p class="hero-lead">Пять игроков. Два шанса.<br class="mobile-break"> Одна победа.</p>
-        <p class="hero-description">Играем <strong>{{ tournamentDates }} 2026 года</strong>. Заявите команду и поборитесь за призовой фонд, который формируется из взносов участников.</p>
+        <p class="hero-lead" style="white-space: pre-line">{{ content.heroLead }}</p>
+        <p class="hero-description">Играем <strong>{{ tournamentDates }} {{ tournamentYear }} года</strong>. {{ content.heroDescription }}</p>
         <div class="hero-actions">
           <button class="pill-button" type="button" :disabled="registrationClosed" @click="openRegistration">{{ registrationClosed ? 'Регистрация закрыта' : 'Подать заявку' }} <span v-if="!registrationClosed" class="accent" aria-hidden="true">↗</span></button>
           <button class="text-button" type="button" @click="openEvent('matches')">Расписание матчей <span aria-hidden="true">↓</span></button>
@@ -142,7 +144,7 @@ onMounted(() => {
           <div><dt>Даты турнира</dt><dd>{{ tournamentDates }}</dd></div>
           <div><dt>Вступительный взнос</dt><dd class="accent">{{ formatRubles(terms.entryFee) }} <small>с команды</small></dd></div>
           <div><dt>Участники</dt><dd>От {{ terms.minimumTeams }} команд <small>без верхнего лимита</small></dd></div>
-          <div><dt>Призовые</dt><dd>90% взносов <small>на три места</small></dd></div>
+          <div><dt>Призовые</dt><dd>{{ prizeShare }}% взносов <small>на три места</small></dd></div>
         </dl>
         <RegistrationCountdown :deadline="terms.registrationClosesAt" @closed="registrationClosed = $event" />
         <div v-if="liveMatch" class="live-notice" role="region" aria-label="Матч в эфире">
@@ -164,8 +166,7 @@ onMounted(() => {
             <li v-for="(step, index) in participationSteps" :key="step.title" v-reveal="index * 45"><span class="step-number">{{ String(index + 1).padStart(2, '0') }}</span><h3>{{ step.title }}</h3><p>{{ step.text }}</p></li>
           </ol>
           <div class="participation-cards">
-            <article class="participation-card"><h3>Что нужно команде</h3><p><strong>Пять основных игроков</strong> и до двух запасных. Укажите контакт капитана — через него пройдут проверка состава и связь с организатором.</p></article>
-            <article class="participation-card"><h3>Как проходят игры</h3><p><strong>Double elimination</strong> — выбывание после второго поражения. Данные сервера и точное время матча капитан получит после подтверждения состава.</p></article>
+            <article v-for="card in content.participationCards" :key="card.title" class="participation-card"><h3>{{ card.title }}</h3><p>{{ card.text }}</p></article>
           </div>
           <div class="participation-action"><button class="pill-button" type="button" :disabled="registrationClosed" @click="openRegistration">{{ registrationClosed ? 'Регистрация закрыта' : 'Подать заявку' }} <span v-if="!registrationClosed" class="accent" aria-hidden="true">↗</span></button><span>Взнос — {{ formatRubles(terms.entryFee) }} с команды</span></div>
         </div>
@@ -174,14 +175,14 @@ onMounted(() => {
           <template v-if="registrationStatus !== 'success'">
             <h3>ЗАЯВКА КОМАНДЫ</h3>
             <p>Все поля обязательны. Контакты увидит организатор; в списке команд появятся только название, состав и статус.</p>
-            <p class="registration-terms">Взнос — <strong>{{ formatRubles(terms.entryFee) }} с команды</strong>. Регистрация до <strong>8 октября, 12:00 МСК</strong>.</p>
+            <p class="registration-terms">Взнос — <strong>{{ formatRubles(terms.entryFee) }} с команды</strong>. Регистрация до <strong>{{ registrationDeadlineText }}</strong>.</p>
             <div v-if="registrationClosed" class="inline-message" role="status"><strong>Регистрация завершена</strong><p>Срок подачи заявок истёк. Новые заявки не принимаются.</p></div>
             <form v-else :aria-busy="registrationStatus === 'loading'" @submit.prevent="submitRegistration">
               <div class="form-grid">
                 <label>Название команды *<input v-model.trim="registrationForm.teamName" type="text" name="teamName" minlength="2" maxlength="80" autocomplete="organization" placeholder="Название команды" required></label>
                 <label>Имя капитана *<input v-model.trim="registrationForm.captainName" type="text" name="captainName" minlength="2" maxlength="80" autocomplete="name" placeholder="Имя или ник" required></label>
                 <label>Email *<input v-model.trim="registrationForm.email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="captain@example.com" required></label>
-                <label>Discord / Telegram *<input v-model.trim="registrationForm.contact" type="text" name="contact" minlength="2" maxlength="100" autocomplete="off" placeholder="@captain" required><small>Укажите контакт, по которому организатор сможет вам написать.</small></label>
+                <label>Telegram *<input v-model.trim="registrationForm.contact" type="text" name="contact" minlength="2" maxlength="100" autocomplete="off" placeholder="@captain" required><small>Укажите контакт, по которому организатор сможет вам написать.</small></label>
                 <label>Игроков в заявке *<select v-model.number="registrationForm.players" name="players" required><option :value="5">5 игроков</option><option :value="6">6 игроков</option><option :value="7">7 игроков</option></select></label>
               </div>
               <label class="form-agreement"><input type="checkbox" name="agreement" required><span>Я принимаю <a href="/documents/tournament-regulations.txt" target="_blank" rel="noopener">регламент</a> и согласен на <a href="/documents/reglament_obrabotki_personalnyh_dannyh.pdf" target="_blank" rel="noopener">обработку данных</a>.</span></label>
@@ -191,7 +192,7 @@ onMounted(() => {
           </template>
           <div v-else class="registration-success" role="status">
             <span class="section-kicker accent">ГОТОВО / СЛЕДУЮЩИЙ ШАГ — ПРОВЕРКА</span>
-            <h3>ЗАЯВКА ПРИНЯТА</h3><p>Заявка получена. Следите за сообщениями в указанном Discord или Telegram — организатор свяжется с капитаном для подтверждения состава.</p>
+            <h3>ЗАЯВКА ПРИНЯТА</h3><p>Заявка получена. Следите за сообщениями в указанном Discord или Telegram — организатор свяжется с капитаном для подтверждения состава. </p> <p>Для ускорения процесса момете самостоятельно написать администратору - ТГ: @zavoz_contenta </p>
             <button class="pill-button" type="button" @click="selectTab('teams')">Список команд</button>
             <button class="text-button" type="button" @click="resetRegistration">Отправить ещё одну заявку</button>
           </div>
@@ -212,11 +213,11 @@ onMounted(() => {
 
       <TournamentFunding :terms="terms" />
 
-      <aside v-reveal class="preflight-note" aria-label="Важно перед матчем"><span class="section-kicker accent">ВАЖНО ПЕРЕД СТАРТОМ</span><p>Будьте готовы <strong>за 15 минут до матча</strong>. Проверьте Counter-Strike 2 и античит Faceit. Замены после публикации посева согласуйте с администратором.</p><a href="/documents/tournament-regulations.txt" target="_blank" rel="noopener">Прочитать регламент <span aria-hidden="true">↗</span></a></aside>
+      <aside v-reveal class="preflight-note" aria-label="Важно перед матчем"><span class="section-kicker accent">ВАЖНО ПЕРЕД СТАРТОМ</span><p>{{ content.preflightText }}</p><a href="/documents/tournament-regulations.txt" target="_blank" rel="noopener">Прочитать регламент <span aria-hidden="true">↗</span></a></aside>
 
       <section v-reveal id="tournament" class="event-section" aria-labelledby="event-title">
         <div class="section-heading"><div><span class="section-kicker">03 / ДЛЯ ИГРОКОВ И ЗРИТЕЛЕЙ</span><h2 id="event-title">Матчи и сетка</h2></div><span class="section-aside">Всё время — по Москве</span></div>
-        <div class="broadcast-note"><span class="section-kicker accent">РЕШАЮЩИЕ МАТЧИ — В ПРЯМОМ ЭФИРЕ</span><p><strong>Гранд-финал и матч за 3 место</strong> будут транслироваться на Twitch и на этом сайте.</p><button class="text-button" type="button" @click="openEvent('stream')">К трансляции <span aria-hidden="true">→</span></button></div>
+        <div class="broadcast-note"><span class="section-kicker accent">РЕШАЮЩИЕ МАТЧИ — В ПРЯМОМ ЭФИРЕ</span><p>{{ content.broadcastText }}</p><button class="text-button" type="button" @click="openEvent('stream')">К трансляции <span aria-hidden="true">→</span></button></div>
         <div class="segmented" role="group" aria-label="Разделы турнира"><button v-for="tab in eventTabs" :key="tab.id" type="button" :aria-pressed="eventTab === tab.id" @click="eventTab = tab.id">{{ tab.label }}</button></div>
         <p v-if="isLoading" class="event-state" role="status">Загружаем данные турнира…</p>
         <div v-else-if="loadError" class="inline-message" role="alert"><p>{{ loadError }}</p><button class="text-button" type="button" @click="loadTournament">Повторить</button></div>
@@ -248,6 +249,6 @@ onMounted(() => {
         </div>
       </section>
     </main>
-    <SiteFooter :stream-url="streamChannel ? stream.url : ''" @register="openRegistration" />
+    <SiteFooter :stream-url="streamChannel ? stream.url : ''" :organizer-url="content.organizerUrl" :organizer-label="content.organizerLabel" @register="openRegistration" />
   </div>
 </template>

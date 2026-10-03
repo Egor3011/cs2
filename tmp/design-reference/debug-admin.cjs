@@ -1,0 +1,53 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const { chromium } = require('/Users/egoraksenov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const base = 'http://127.0.0.1:5174', api = 'http://127.0.0.1:8011';
+const testKey = 'admin-test-only';
+(async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  try {
+    const context = await browser.newContext({ viewport: { width: 1512, height: 1000 } });
+    await context.route('**/api/**', async route => {
+      const pathname = new URL(route.request().url()).pathname;
+      const response = await route.fetch({ url: api + pathname });
+      await route.fulfill({ response });
+    });
+    const page = await context.newPage(), errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('dialog', dialog => dialog.accept());
+    await page.goto(base + '/admin', { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: 'Вход администратора' }).waitFor();
+    await page.getByLabel('Ключ администратора').fill('wrong-key');
+    await page.getByRole('button', { name: 'Войти', exact: true }).click();
+    await page.getByRole('alert').filter({ hasText: 'Ключ не подошёл' }).waitFor();
+    await page.getByLabel('Ключ администратора').fill(testKey);
+    await page.getByRole('button', { name: 'Войти', exact: true }).click();
+    await page.getByRole('heading', { name: 'Информация о турнире' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Сохранить', exact: true }).isDisabled(), true);
+    await page.getByLabel('Название турнира', { exact: true }).fill('Admin Test Cup');
+    await page.getByLabel('Дата начала', { exact: true }).fill('2027-10-09');
+    await page.getByLabel('Дата окончания', { exact: true }).fill('2027-10-11');
+    await page.getByLabel('Регистрация до, МСК', { exact: true }).fill('2027-10-08T12:00');
+    await page.getByLabel('Взнос с команды, ₽', { exact: true }).fill('2500');
+    await page.getByLabel('1 место, %', { exact: true }).fill('45');
+    await page.getByLabel('Организация, %', { exact: true }).fill('15');
+    await page.screenshot({ path: 'tmp/design-reference/admin-settings-desktop.png', fullPage: true });
+    await page.getByRole('button', { name: 'Тексты', exact: true }).click();
+    await page.getByLabel('Короткий заголовок на главной').fill('Турнир начинается здесь.');
+    await page.getByLabel('Описание турнира', { exact: true }).fill('Описание из админ-панели.');
+    await page.getByRole('button', { name: '+ Добавить вопрос', exact: true }).click();
+    await page.getByLabel('Вопрос', { exact: true }).last().fill('Как связаться?');
+    await page.getByLabel(/^Ответ/).last().fill('Напишите организатору.');
+    await page.getByRole('button', { name: 'Команды', exact: true }).click();
+    await page.getByLabel('Название новой команды').fill('New Aces');
+    await page.getByRole('button', { name: '+ Добавить команду', exact: true }).click();
+    assert.equal(await page.locator('.admin-team-list li').count(), 4);
+    await page.getByRole('button', { name: 'Поднять New Aces', exact: true }).click();
+    assert.equal(await page.getByLabel('Название команды 3', { exact: true }).inputValue(), 'New Aces');
+    await page.getByRole('button', { name: 'Сетка', exact: true }).click();
+    await page.waitForTimeout(300);
+    console.log(await page.locator('body').innerText());
+    console.log('ERRORS', errors);
+    await page.screenshot({path:'tmp/design-reference/admin-debug.png',fullPage:true});
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exit(1); });

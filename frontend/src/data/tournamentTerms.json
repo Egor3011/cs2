@@ -7,7 +7,7 @@
   "prizeDistribution": {
     "first": 50,
     "second": 25,
-    "third": 10,
-    "organization": 15
+    "third": 15,
+    "organization": 10
   }
 }
